@@ -1,5 +1,6 @@
 import sqlite3
-
+import re
+import datetime
 class DB:
     def __init__(self):
         self.id = 0
@@ -44,11 +45,179 @@ class DB:
     def CloseDB(self):
         self.conn.close()
 
+class Analysis:
+    def __init__(self, db):
+        self.db = db
+        self.contents = db.FetchDB()
+        self.texts = []
+        self.length = len(self.contents)
+        self.result = []
+
+
+
+
+    def split_space(self):
+           for i in range(self.length):
+            s=self.contents[i][2].replace("("," ( ").replace(")"," ) ")
+            self.texts.append([word for word in re.split("[\s,.]+", s) if word != ""])#self.contents[i][2]は文字列
+
+    def search_word(self,word):#[index in contents, index in text]
+        for i in range(self.length):
+            for j in range(len(self.texts[i])):
+                w = self.texts[i][j]
+                if w == word:
+                    self.result.append([i,j])
+                
+
+    def Print_Level_1(self):
+        c = 0
+        for r in self.result:
+            t = r[0]
+            w = r[1]
+            text = []
+            dist = []
+
+            print(c,"-",datetime.datetime.now(),"-",self.texts[t][0],"-",t)
+
+            i = 0
+            while i <= 6 :
+                if w - i >= 0:
+                    text.insert(0,self.texts[t][w-i])
+                    dist.insert(0,i)
+                i += 1
+
+            i = 1
+            while i <= 5 :
+                if w + i <= len(self.texts[t])-1:
+                    text.append(self.texts[t][w+i])
+                    dist.append(i)
+                i += 1
+
+            for i in text:
+                print(i, end=" ")
+            print(dist)
+            print("\n")        
+            c+=1
+
+    def frequency(self,text):
+        cnt = []
+        words = []
+        for w in text:
+            if w not in words:
+                words.append(w)
+                cnt.append(1)
+            else:
+                for i in range(len(words)):
+                    if words[i] == w:
+                        cnt[i] += 1
+        f = {"count":cnt,"word":words}
+        return  f
+    def max(self,array):
+        max = 0
+        for i in range(1,len(array)):
+            if array[max] < array[i]:
+                max = i
+        
+        return max
+
+    def partition(self,array,array2):
+        m = int( len(array) / 2 )
+        arr1 = array[:m]
+        arr2 = array[m:]
+        arr21 = array2[:m]
+        arr22 = array2[m:]
+
+
+        return arr1,arr2,arr21,arr22
+
+
+    def merge(self,left,right,left2,right2):
+        array = []
+        array2 = []
+        i = 0
+        j = 0
+        while i < len(left) and j < len(right):
+            if left[i] >= right[j]:
+                array.append(left[i])
+                array2.append(left2[i])
+                i+=1
+            else:
+                array.append(right[j])
+                array2.append(right2[j])
+                j+=1
+
+        if i == len(left):
+            array += right[j:]
+            array2 += right2[j:]
+        else:
+            array += left[i:]
+            array2 += left2[i:]
+        
+        return array,array2
+        
+
+    def mergesort(self,array,array2):
+        if len(array) == 1:
+            return array,array2
+        
+        l,r,l2,r2 = self.partition(array,array2)
+
+        l,l2 = self.mergesort(l,l2)
+        r,r2 = self.mergesort(r,r2)
+
+        m,m2 = self.merge(l,r,l2,r2)
+
+        return m,m2
+
+    def compare(self,Qi,Ki):
+        Q = self.texts[Qi]
+        K = self.texts[Ki]
+
+        Qf = self.frequency(Q)
+        Kf = self.frequency(K)
+
+
+        Qc,Qw = self.mergesort(Qf["count"],Qf["word"])
+        Kc,Kw = self.mergesort(Kf["count"],Kf["word"])
+
+        k = 0
+        f = 0
+        while True:
+            for i in range(k+20):
+                if i < len(Qc):
+                    print(Qw[i],Qc[i],"|",end=" ")
+                    f = 1
+            print("")
+            for i in range(k+20):
+                if i < len(Kc):
+                    print(Kw[i],Kc[i],"|",end=" ")
+                    f = 1
+            
+            print(Qw)
+
+            if f == 1: break
+            inp = input("continue(yes or no): ")
+            if inp == "no": break 
+            k+=20
+    
+
+    
+    
+
+    
+
+
 db = DB()
-db.InsertDB(
-    [["test0","fsdjfasdfsadfas"],
-    ["test1","sdfjasdfj;askldfjas"],
-    ["test3","ffs24314312412354325"]]
-)
-db.RenameDB(1,"text33333")
+db.InsertDB([
+    ["aa","Once I arrived in Japan, I didn't have much of an opportunity to do much cooking due to living in an apartment with my wife's mother and sister. Once we finally moved out into a house of our own, I started to cook again, but had trouble sourcing ingredients for western style recipes (I'm not good at cooking Japanese food). Eventually, I ended up finding a few places that had the ingredients I needed, which was a relief as I was missing western food, but in Japan it is pretty expensive to purchase. It eing expensive didn't deter my want to start cooking again."],
+    ["aa","After finally finding places to get ingredients, such as Seijo Ishii, Amica, Gyomu Super and the online store The Meat Guy, which supplies meat from Australia, New Zealand and other countries I started a cooking frenzy. I have cooked things like steak wrapped in bacon with garlic herb mashed potato, pasta bake, curry sausage pie, salmon steamed in lemon/lime juice with chilli, risotto and many others.  I have added some pictures of just some of things that I have cooked."],
+    ["aa","One problem though is that I tend to be a bit overzealous with presentation, which was because of a chef friend of mine that wouldn't try my food unless it looked well presented. I was always perplexed by this because I wasn't working for a restaurant as a chef."]
+             ]) 
+
 print(db.FetchDB())
+anl = Analysis(db)
+anl.split_space()
+anl.search_word("mashed")
+print("-"*10)
+anl.Print_Level_1()
+anl.compare(0,2)
