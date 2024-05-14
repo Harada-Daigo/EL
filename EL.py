@@ -196,6 +196,7 @@ class Analysis:
             if inp == "no": break 
             k+=20
     
+#========Test=========#
 db = DB()
 db.InsertDB([
     ["aa","Once I arrived in Japan, I didn't have much of an opportunity to do much cooking due to living in an apartment with my wife's mother and sister. Once we finally moved out into a house of our own, I started to cook again, but had trouble sourcing ingredients for western style recipes (I'm not good at cooking Japanese food). Eventually, I ended up finding a few places that had the ingredients I needed, which was a relief as I was missing western food, but in Japan it is pretty expensive to purchase. It eing expensive didn't deter my want to start cooking again."],
