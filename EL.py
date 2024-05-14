@@ -67,7 +67,6 @@ class Analysis:
                 w = self.texts[i][j]
                 if w == word:
                     self.result.append([i,j])
-                
 
     def Print_Level_1(self):
         c = 0
