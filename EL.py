@@ -202,7 +202,6 @@ db.InsertDB([
     ["aa","After finally finding places to get ingredients, such as Seijo Ishii, Amica, Gyomu Super and the online store The Meat Guy, which supplies meat from Australia, New Zealand and other countries I started a cooking frenzy. I have cooked things like steak wrapped in bacon with garlic herb mashed potato, pasta bake, curry sausage pie, salmon steamed in lemon/lime juice with chilli, risotto and many others.  I have added some pictures of just some of things that I have cooked."],
     ["aa","One problem though is that I tend to be a bit overzealous with presentation, which was because of a chef friend of mine that wouldn't try my food unless it looked well presented. I was always perplexed by this because I wasn't working for a restaurant as a chef."]
              ]) 
-
 print(db.FetchDB())
 anl = Analysis(db)
 anl.split_space()
