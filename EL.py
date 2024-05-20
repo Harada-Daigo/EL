@@ -53,13 +53,25 @@ class Analysis:
         self.length = len(self.contents)
         self.result = []
 
-
-
+        self.removePunctuation = [".",",","(",")","\s"]
+        self.remainPunctuation = []
 
     def split_space(self):
            for i in range(self.length):
-            s=self.contents[i][2].replace("("," ( ").replace(")"," ) ")
-            self.texts.append([word for word in re.split("[\s,.]+", s) if word != ""])#self.contents[i][2]は文字列
+            s = self.contents[i][2]
+
+            #pは残す文字列のパターン
+            for p in self.remainPunctuation:
+                p_next = " " + p + " "
+                s = s.replace(p,p_next)
+
+            #pは削除する文字のパターン
+            p = "["
+            for i in self.removePunctuation:
+                p += i
+            p += "]+"
+
+            self.texts.append([word for word in re.split(p, s) if word != ""])#self.contents[i][2]は文字列
 
     def search_word(self,word):#[index in contents, index in text]
         for i in range(self.length):
@@ -109,7 +121,7 @@ class Analysis:
                 for i in range(len(words)):
                     if words[i] == w:
                         cnt[i] += 1
-        f = {"count":cnt,"word":words}
+        f = {"count":cnt,"word":words,"label":"frequency","element":["count","word"]}
         return  f
     def max(self,array):
         max = 0
@@ -177,36 +189,77 @@ class Analysis:
         Kc,Kw = self.mergesort(Kf["count"],Kf["word"])
 
         k = 0
-        f = 0
+        f1 = 0
+        f2 = 0
         while True:
-            for i in range(k+20):
+            print("\n","-"*30,"Text1","-"*30)
+            for i in range(k,k+20):
                 if i < len(Qc):
                     print(Qw[i],Qc[i],"|",end=" ")
-                    f = 1
-            print("")
-            for i in range(k+20):
+                else:
+                    f1 = 1
+            print("\n","-"*30,"Text2","-"*30)
+            for i in range(k,k+20):
                 if i < len(Kc):
                     print(Kw[i],Kc[i],"|",end=" ")
-                    f = 1
-            
-            print(Qw)
-
-            if f == 1: break
-            inp = input("continue(yes or no): ")
+                else:
+                    f2 = 1
+            if f1*f2 == 1: break
+            inp = input("\ncontinue(yes or no): ")
             if inp == "no": break 
             k+=20
+
+    def Similarity(self):
+        nrr = []#the number
+        wrr = []#the word
+        frr = []
+        num = 0
+        texts = self.texts
+
+        for text in texts:
+            f = self.frequency(text)
+            frr.append(f["word"])
+
+        for i in range( len(frr) ):#textごとに抽出
+            for w in range( len(frr[i]) ):#wordごとに抽出
+                word = frr[i][w]
+                if word == None: continue
+
+                nrr.append(1)
+                wrr.append(word)
+                num += 1
+                frr[i][w] = None
+
+                for j in range( i+1 , len(frr) ):#検索対象のテキストを抽出
+                    for t in range(len(frr[j])):#検索対象のワードを抽出
+                        if wrr[num-1] == frr[j][t]:
+                            nrr[num-1] += 1
+                            frr[j][t] = None
+        
+        nrr,wrr = self.mergesort(nrr,wrr)
+
+        return {"count":nrr,"word":wrr,"label":"simirality","element":["count","word"]}
+    
+    def DictPrint(self,dic):
+        for element in dic["element"]:
+            print("*"*30,dic["label"]+"["+element+"]","*"*30)
+            print(dic[element])
+
+
     
 #========Test=========#
 db = DB()
 db.InsertDB([
-    ["aa","Once I arrived in Japan, I didn't have much of an opportunity to do much cooking due to living in an apartment with my wife's mother and sister. Once we finally moved out into a house of our own, I started to cook again, but had trouble sourcing ingredients for western style recipes (I'm not good at cooking Japanese food). Eventually, I ended up finding a few places that had the ingredients I needed, which was a relief as I was missing western food, but in Japan it is pretty expensive to purchase. It eing expensive didn't deter my want to start cooking again."],
+    ["aa","Once I arrived in Japan, I didn't have much of an opportunity to do much cooking due to living in an apartment with my wife's mother and sister. Once we finally moved out into a house of our own, I started to cook again, but had trouble sourcing ingredients for western style recipes (I'm not good at cooking Japanese food). Eventually, I ended up finding a few places that had the ingredients I needed, which was a relief as I was missing western food, but in Japan it is pretty expensive to purchase. It eing expensive didn't deter my want to start cooking again. After finally finding places to get ingredients, such as Seijo Ishii, Amica, Gyomu Super and the online store The Meat Guy, which supplies meat from Australia, New Zealand and other countries I started a cooking frenzy. I have cooked things like steak wrapped in bacon with garlic herb mashed potato, pasta bake, curry sausage pie, salmon steamed in lemon/lime juice with chilli, risotto and many others.  I have added some pictures of just some of things that I have cooked."],
     ["aa","After finally finding places to get ingredients, such as Seijo Ishii, Amica, Gyomu Super and the online store The Meat Guy, which supplies meat from Australia, New Zealand and other countries I started a cooking frenzy. I have cooked things like steak wrapped in bacon with garlic herb mashed potato, pasta bake, curry sausage pie, salmon steamed in lemon/lime juice with chilli, risotto and many others.  I have added some pictures of just some of things that I have cooked."],
     ["aa","One problem though is that I tend to be a bit overzealous with presentation, which was because of a chef friend of mine that wouldn't try my food unless it looked well presented. I was always perplexed by this because I wasn't working for a restaurant as a chef."]
              ]) 
-print(db.FetchDB())
+#print(db.FetchDB())
 anl = Analysis(db)
 anl.split_space()
 anl.search_word("mashed")
 print("-"*10)
 anl.Print_Level_1()
-anl.compare(0,2)
+#anl.compare(0,1)
+anl.DictPrint(anl.Similarity())
+
