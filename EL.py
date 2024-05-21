@@ -111,16 +111,16 @@ class Analysis:
             c+=1
 
     def frequency(self,text):
-        cnt = []
-        words = []
+        wrr = {}
         for w in text:
-            if w not in words:
-                words.append(w)
-                cnt.append(1)
+            if w not in wrr:
+                wrr[w] = 1
             else:
-                for i in range(len(words)):
-                    if words[i] == w:
-                        cnt[i] += 1
+                wrr[w] += 1
+        
+        cnt = list(wrr.values())
+        words = list(wrr.keys())
+        
         f = {"count":cnt,"word":words,"label":"frequency","element":["count","word"]}
         return  f
     def max(self,array):
@@ -205,40 +205,30 @@ class Analysis:
                 else:
                     f2 = 1
             if f1*f2 == 1: break
+            
             inp = input("\ncontinue(yes or no): ")
             if inp == "no": break 
             k+=20
 
     def Similarity(self):
-        nrr = []#the number
-        wrr = []#the word
-        frr = []
-        num = 0
+        wrr = {}
         texts = self.texts
 
         for text in texts:
-            f = self.frequency(text)
-            frr.append(f["word"])
+            txt = self.frequency(text)["word"]
 
-        for i in range( len(frr) ):#textごとに抽出
-            for w in range( len(frr[i]) ):#wordごとに抽出
-                word = frr[i][w]
-                if word == None: continue
-
-                nrr.append(1)
-                wrr.append(word)
-                num += 1
-                frr[i][w] = None
-
-                for j in range( i+1 , len(frr) ):#検索対象のテキストを抽出
-                    for t in range(len(frr[j])):#検索対象のワードを抽出
-                        if wrr[num-1] == frr[j][t]:
-                            nrr[num-1] += 1
-                            frr[j][t] = None
+            for i in txt:#textごとに抽出
+                if i in wrr:
+                    wrr[i] += 1
+                else:
+                    wrr[i] = 1
         
-        nrr,wrr = self.mergesort(nrr,wrr)
+        arr1 = list(wrr.keys())
+        arr2 = list(wrr.values())
 
-        return {"count":nrr,"word":wrr,"label":"simirality","element":["count","word"]}
+        arr2,arr1 = self.mergesort(arr2,arr1)
+
+        return {"count":arr2,"word":arr1,"label":"simirality","element":["count","word"]}
     
     def DictPrint(self,dic):
         for element in dic["element"]:
