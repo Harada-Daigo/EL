@@ -512,9 +512,8 @@ class main:
         self.Wiget["Button"][1].place(x=x+200,y=y)
     def rename(self):
         self.DestroyPartOfLabel(2)
-
-        self.Wiget["Button"][1]["state"] = tk.DISABLED
         
+        self.Wiget["Button"][1]["state"] = tk.DISABLED
         font_size = 13
 
         try:
