@@ -4,6 +4,7 @@ import datetime
 import tkinter as tk
 import os
 import traceback
+from tkinter.scrolledtext import ScrolledText
 class DB:
     def __init__(self):
         self.id = 0
@@ -115,22 +116,21 @@ class Analysis:
 
             self.texts.append([word for word in re.split(p, s) if word != ""])#self.contents[i][2]は文字列
 
-    def search_word(self,word):#[index in contents, index in text]
+    def search_word(self,word,id):#[index in contents, index in text]
         self.result=[]
-        for i in range(self.length):
-            for j in range(len(self.texts[i])):
-                w = self.texts[i][j]
-                if w == word:
-                    self.result.append([i,j])
-    def getColor(self):
+        for j in range(len(self.texts[id])):
+            w = self.texts[id][j]
+            if w == word:
+                self.result.append(j)
+    def getColor(self,i):#i = id
         self.colors = []
-        for i,j in self.result:
+        for j in self.result:
             now = j
             dis = 0
             color = []
 
             for k in range(5):
-                now -=1
+                now -= 1
                 if now >= 0:
                     dis += 1
                 else:
@@ -342,16 +342,16 @@ class main:
             "Label":[]
         }
 
-# スクロールの設定
+
         self.cv.configure(scrollregion=(0, 0, 9000, 24000))
         self.cv.configure(yscrollcommand=self.yscrollbar.set)
         self.cv.configure(xscrollcommand=self.xscrollbar.set)
 
-        # 諸々を配置
+
         self.yscrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.xscrollbar.pack(side=tk.BOTTOM, fill=tk.X)
         self.cv.pack(expand=True, fill=tk.BOTH)
-        # Canvas上の座標(0, 0)に対してFrameの左上（nw=north-west）をあてがうように、Frameを埋め込む
+        
         self.cv.create_window((0, 0), window=self.frame, anchor="nw", width=9000, height=12000)
         self.cv.pack()
 
@@ -391,24 +391,18 @@ class main:
         self.STOP = True
         self.STOP = False
         
+        x,y = (50,100)
+        self.putLabel("Menu",x+220,y-70,6,40,False,False)
         self.Wiget["Button"]=[
             tk.Button(text="Search Word",command=self.SearchPanel,width=10,height=3),
             tk.Button(text="Rename",command=self.RenamePanel,width=10,height=3),
             tk.Button(text="Fetch",command=self.FetchPanel,width=10,height=3),
             tk.Button(text="Similaryty",command=self.SimilarytyPanel,width=10,height=3),
             tk.Button(text="Compare",command=self.ComparePanel,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3),
-            tk.Button(text="Developing",command=self.test,width=10,height=3)
+            tk.Button(text="ID",command=self.IDPanel,width=10,height=3),
+            tk.Button(text="Insert",command=self.InsertPanel,width=10,height=3)
         ]
-        [self.Wiget["Button"][x].place(x=70+100*(x%5),y=100+int(x/5)*60) for x in range(len(self.Wiget["Button"]))]
+        [self.Wiget["Button"][i].place(x=x+100*(i%7),y=y+int(i/7)*60,height=200) for i in range(len(self.Wiget["Button"]))]
 
     def putLabels(self,text,x,y,n,font_size):
         #i y-line x x-line n color font_size font_size
@@ -439,37 +433,39 @@ class main:
 
         return x,y
     
-    def getEntry(self,i):
-        self.DestroyPartOfLabel(4)
+    def search(self):
+        self.DestroyPartOfLabel(5)
 
-        w = self.Wiget["Entry"][i].get()
-        self.anl.search_word(w)
-        self.anl.getColor()
+        id = int(self.Wiget["Entry"][0].get())
+        w = self.Wiget["Entry"][1].get()
+
+        self.anl.search_word(w,id)
+        self.anl.getColor(id)
 
         texts = self.anl.texts
         sum = 0
         font_size = 10
         y = 70
+        x,y = (0,100)
 
         
         if self.anl.result == []:
             self.putLabel("Nothing!",200,y,6,30,False,False)
 
-        self.putLabel(":::Hit["+str(len(self.anl.result))+"]:::",450,20,1,15,True,False)
+        self.putLabel(":::Hit["+str(len(self.anl.result))+"]:::",550,20,1,15,True,False)
         self.root.update()
 
-        for i in range(len(self.anl.result)):
-            if self.STOP: break
 
-            text = ""
-            j,k = self.anl.result[i]
-            x = 0
-
-            p = str(i)+"-"+str(datetime.datetime.now())+"-"+texts[j][0]+"-"+str(j)
+        text = ""
+        x = 0
+        j = id
+        now = 0
+        for k in  self.anl.result:
+            p = str(id)+"-"+str(datetime.datetime.now())+"-"+texts[j][0]+"-"+str(j)
             x,y = self.putLabel(p,x,y,6,font_size,False,True)
             sum += 1
 
-            col = self.anl.colors[i][0]
+            col = self.anl.colors[now][0]
             for n in range(1,col+1):
                 if self.STOP: break
                 text = texts[j][k-(6-n)]+" "
@@ -479,14 +475,14 @@ class main:
             x,y = self.putLabel(text,x,y,0,font_size,True,False)
 
 
-            col = self.anl.colors[i][1]
+            col = self.anl.colors[now][1]
             for n in range(1,col+1):
                 if self.STOP: break
                 text = texts[j][k+n]+" "
-                x,y = self.putLabel(text,x,y,n,font_size,True, True if n == col else False)
+                x,y = self.putLabel(text,x,y,n,font_size,False if n == col else True, True if n == col else False)
 
             #print(j,"<-J",k,"<-K",i,"<-i",p,text)
-
+            now += 1
             self.root.update()
 
         #print(len(self.Wiget["Label"]),sum)
@@ -499,17 +495,23 @@ class main:
         x,y=self.putLabel("|     Search     |",x0,y,6,13,False,True)
         x,y=self.putLabel("-"*30,x0,y,6,10,False,True)
         
-        x,y = (200,30)
+        x0,y0 = (200,30)
+        x,y = self.putLabel("id",x0,y0,6,15,False,True)
+        x,y = self.putLabel("word",x0,y,6,15,False,False)
         self.Wiget["Entry"].append(tk.Entry(self.frame, width=20))
-        self.Wiget["Entry"][0].place(x=x,y=y)
+        self.Wiget["Entry"][0].place(x=x0+x+100,y=y0)
+        self.Wiget["Entry"].append(tk.Entry(self.frame, width=20))
+        self.Wiget["Entry"][1].place(x=x0+x+100,y=y)
+
         self.Wiget["Button"].append(
-            tk.Button(self.frame,text="検索", command=lambda:self.getEntry(0))
+            tk.Button(self.frame,text="検索", command=self.search)
         )
         self.Wiget["Button"].append(
            tk.Button(self.frame,text="戻る",command=self.StartPanel)
         )
-        self.Wiget["Button"][0].place(x=x+150,y=y)
-        self.Wiget["Button"][1].place(x=x+200,y=y)
+        self.Wiget["Button"][0].place(x=x0+x+250,y=y0)
+        self.Wiget["Button"][1].place(x=x0+x+300,y=y0)
+
     def rename(self):
         self.DestroyPartOfLabel(2)
         
@@ -663,6 +665,7 @@ class main:
         x,y = (0,70)
         w = self.Wiget["Entry"][0].get()
         for i in range(len(dic["word"])):
+            if self.STOP:break
             if (dic["word"][i] == w): color = 0
             else: color = 6
             x,y = self.putLabels(""+dic["word"][i] + "[" + str(dic["count"][i])+"] :::",x,y,color,font_size)
@@ -796,10 +799,120 @@ class main:
 
         self.compare_y = y
         self.compare_k += 20
-        
+    
+    def InsertPanel(self):
+        self.DestroyPanel()
 
+        self.compare_k = 0
+        self.compare_y = 200
+        self.compare_id0 = None
+        self.compare_id1 = None
         
+        x0,y0 = (0,0)
+        font_size = 12
+
+        x,y = self.putLabel("-"*30,x0,y0,6,10,False,True)
+        x,y = self.putLabel("| Insert  |",x,y,6,15,False,True)
+        x,y = self.putLabel("-"*30,x,y,6,10,True,True)
+
+        x,y = self.putLabel("name",0,y,6,15,True,False)
+        entry = tk.Entry(self.frame,width=20)
+        entry.place(x=x+20,y=y)
+        self.Wiget["Entry"].append(entry)
+
+        x,y = self.putLabel("text",0,y+50,6,15,True,False)
+        entry =  ScrolledText(self.frame, font=("", 10), height=5, width=40)
+        entry.place(x=x+20,y=y,height=100)
+        self.Wiget["Entry"].append(entry)
+
+        self.Wiget["Button"].append(
+           tk.Button(self.frame,text="実行",command=self.Insert,width=20)
+        )
+        self.Wiget["Button"][0].place(x=0,y=y+130)
+
+        self.Wiget["Button"].append(
+           tk.Button(self.frame,text="戻る",command=self.StartPanel,width=20)
+        )
+        self.Wiget["Button"][1].place(x=x+160,y=y+130)
+
+    def Insert(self):
+        x0,y0 = (10,300)
+        name = self.Wiget["Entry"][0].get()
+        text = self.Wiget["Entry"][1].get("1.0", "end-1c")
+
+        self.Wiget["Entry"][0].delete(0,tk.END)
+        self.Wiget["Entry"][1].delete('1.0', 'end-1c')
+
+        if name == "" or text == "":
+            self.putLabel("Error",x0+100,y0,1,10,False,False)
         
+        x , y = self.putLabel("name -> {}".format(name),x0,y0,6,10,False,True)
+        x , y = self.putLabel("text ->",x0+x,y,6,10,False,True)
+        x , y = self.putLabel(text,x0+x+30,y,6,10,False,True)
+    
+
+    def search(self):
+        self.DestroyPartOfLabel(5)
+
+        words = self.Wiget["Entry"][0].get()
+        words = words.split(" ")
+
+        font_size = 10
+        y = 70
+
+        res = []
+        c = 0
+        for content in  self.anl.contents:
+            name = content[1]
+            f = False
+
+            print(words)
+            for word in words:
+                if word.lower() not in name.lower():
+                    f = True
+                    break
+            if f:continue
+
+            res.append([c,name])
+            c += 1
+        
+        if res == []:
+            self.putLabel("[Nothing]",30,y,6,15,False,False)
+
+        else:
+            self.putLabel(":::Hit["+str(len(res))+"]:::",550,20,1,15,True,False)
+
+            x,y = (0,100)
+            for arr in res:
+                x,y = self.putLabel("id[{0}]-name:::> {1}".format(arr[0],arr[1]),x,y,6,font_size,False,True)
+
+
+            self.root.update()
+
+
+    
+    def IDPanel(self):
+        self.DestroyPanel()
+        x0,y=(30,0)
+        x,y=self.putLabel("-"*30,x0,y,6,10,False,True)
+        x,y=self.putLabel("|         ID         |",x0,y,6,13,False,True)
+        x,y=self.putLabel("-"*30,x0,y,6,10,False,True)
+        
+        x0,y0 = (200,30)
+        x,y = self.putLabel("name",x0,y0,6,15,False,False)
+        self.Wiget["Entry"].append(tk.Entry(self.frame, width=20))
+        self.Wiget["Entry"][0].place(x=x0+x+100,y=y0)
+
+        self.Wiget["Button"].append(
+            tk.Button(self.frame,text="検索", command=self.search)
+        )
+        self.Wiget["Button"].append(
+           tk.Button(self.frame,text="戻る",command=self.StartPanel)
+        )
+        self.Wiget["Button"][0].place(x=x0+x+250,y=y0)
+        self.Wiget["Button"][1].place(x=x0+x+300,y=y0)
+
+    
         
     
 
