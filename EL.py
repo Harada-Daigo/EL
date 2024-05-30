@@ -568,7 +568,7 @@ class main:
         self.Wiget["Button"][1].place(x=x+250,y=50)
 
     def fetch(self):
-        self.DestroyPartOfLabel(7)
+        self.DestroyPartOfLabel(6)
 
         try:
             contents = self.anl.contents
