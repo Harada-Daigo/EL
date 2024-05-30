@@ -15,6 +15,7 @@ class DB:
         sql = """CREATE TABLE IF NOT EXISTS text(id, name, text)"""
         self.cursor.execute(sql)
         self.conn.commit()
+        #self.Text2DB("AA dataset")
     def Text2DB(self,dir):
         files = os.listdir(dir)
         for file in files:
@@ -513,7 +514,7 @@ class main:
         self.Wiget["Button"][1].place(x=x0+x+300,y=y0)
 
     def rename(self):
-        self.DestroyPartOfLabel(2)
+        self.DestroyPartOfLabel(3)#change 2->
         
         self.Wiget["Button"][1]["state"] = tk.DISABLED
         font_size = 13
@@ -845,6 +846,11 @@ class main:
 
         if name == "" or text == "":
             self.putLabel("Error",x0+100,y0,1,10,False,False)
+
+        self.db.InsertDB([[name,text]])
+
+        self.anl.contents = self.db.FetchDB()
+        self.anl.split_space()
         
         x , y = self.putLabel("name -> {}".format(name),x0,y0,6,10,False,True)
         x , y = self.putLabel("text ->",x0+x,y,6,10,False,True)
@@ -919,8 +925,3 @@ class main:
 
 
 main()
-
-a = list(range(0,10))
-print(a)
-print(a[:3])
-print(a[3:])
