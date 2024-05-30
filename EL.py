@@ -851,8 +851,8 @@ class main:
         x , y = self.putLabel(text,x0+x+30,y,6,10,False,True)
     
 
-    def search(self):
-        self.DestroyPartOfLabel(5)
+    def searchID(self):
+        self.DestroyPartOfLabel(4)
 
         words = self.Wiget["Entry"][0].get()
         words = words.split(" ")
@@ -904,7 +904,7 @@ class main:
         self.Wiget["Entry"][0].place(x=x0+x+100,y=y0)
 
         self.Wiget["Button"].append(
-            tk.Button(self.frame,text="検索", command=self.search)
+            tk.Button(self.frame,text="検索", command=self.searchID)
         )
         self.Wiget["Button"].append(
            tk.Button(self.frame,text="戻る",command=self.StartPanel)
