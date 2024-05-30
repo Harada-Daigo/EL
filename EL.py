@@ -294,13 +294,16 @@ class Analysis:
         texts = self.texts
 
         for text in texts:
-            txt = self.frequency(text)["word"]
+            fr = self.frequency(text)
+            txt = fr["word"]
+            c = fr["count"]
 
-            for w in txt:#textごとに抽出
+            for i in range(len(txt)):#textごとに抽出
+                w = txt[i]
                 if w in wrr:
-                    wrr[w] += 1
+                    wrr[w] += c[i]
                 else:
-                    wrr[w] = 1
+                    wrr[w] = c[i]
         
         arr1 = list(wrr.keys())
         arr2 = list(wrr.values())
@@ -661,13 +664,17 @@ class main:
         self.Wiget["Button"][1].place(x=400,y=0)
 
     def Similarity(self):
+        self.DestroyPartOfLabel(3)
+
         font_size = 12
         dic = self.anl.Similarity()
+
         x,y = (0,70)
         w = self.Wiget["Entry"][0].get()
         for i in range(len(dic["word"])):
             if self.STOP:break
-            if (dic["word"][i] == w): color = 0
+            if dic["word"][i] == w:
+                color = 0
             else: color = 6
             x,y = self.putLabels(""+dic["word"][i] + "[" + str(dic["count"][i])+"] :::",x,y,color,font_size)
             self.root.update()
