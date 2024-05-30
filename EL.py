@@ -879,7 +879,7 @@ class main:
                     break
             if f:continue
 
-            res.append([c,name])
+            res.append([content[0],name])
             c += 1
         
         if res == []:
